@@ -2,10 +2,23 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 export default class Background extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      scene: null,
+    };
+  }
   componentDidMount() {
-    var scene = new THREE.Scene();
+    var scene = this.scene;
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffaaff);
+    scene.fog = new THREE.Fog(0xaaffff, 30, 100);
+
+    const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+    scene.add(hemiLight);
 
     var camera = new THREE.PerspectiveCamera(
       75,
@@ -14,7 +27,7 @@ export default class Background extends Component {
       1000
     );
     camera.position.y = 10;
-    camera.position.z = 20;
+    camera.position.z = 40;
 
     var renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -35,15 +48,32 @@ export default class Background extends Component {
     shape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
 
     const geometry = new THREE.ShapeGeometry(shape);
-    geometry.scale(0.2, 0.2, 0.2);
+    geometry.scale(0.1, 0.1, 0.1);
     var material = new THREE.MeshStandardMaterial({
-      color: 0xff00ff,
+      color: 0xaaffff,
       wireframe: true,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.translateY(5);
+    mesh.translateY(10);
+    mesh.translateX(10);
+    mesh.rotateX(Math.PI);
     scene.add(mesh);
+
+    const loader = new GLTFLoader();
+
+    loader.load(
+      "../../tree.glb",
+      function (gltf) {
+        const root = gltf.scene;
+        root.translateY(-10);
+        scene.add(root);
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+      }
+    );
 
     const pointLight = new THREE.PointLight(0xffffff);
     pointLight.position.set(0, 0, 0);
@@ -52,17 +82,53 @@ export default class Background extends Component {
 
     scene.add(pointLight, ambientLight);
 
-    const gridHelper = new THREE.GridHelper(10);
+    const gridHelper = new THREE.GridHelper(500, 30);
+    gridHelper.translateY(-11);
     scene.add(gridHelper);
 
+    const water = new THREE.Mesh(
+      new THREE.PlaneGeometry(500, 500),
+      new THREE.MeshStandardMaterial({ color: 0xaaffff })
+    );
+
+    water.rotateX(-Math.PI / 2);
+    water.translateZ(-11);
+    scene.add(water);
+
+    const groundTexture = new THREE.TextureLoader().load("../../ground.png");
+
+    const plane = new THREE.Mesh(
+      new THREE.BoxGeometry(20, 20, 20),
+      new THREE.MeshBasicMaterial({ map: groundTexture })
+      // new THREE.MeshBasicMaterial({ color: 0x442200 })
+    );
+    plane.rotateX(-Math.PI / 2);
+    plane.translateZ(-20);
+
+    scene.add(plane);
+
+    function addLight() {
+      const lightGeometry = new THREE.SphereGeometry(0.25, 24, 24);
+      const lightMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffff });
+      const light = new THREE.Mesh(lightGeometry, lightMaterial);
+
+      const [x, y, z] = Array(3)
+        .fill()
+        .map(() => THREE.MathUtils.randFloatSpread(100));
+
+      light.position.set(x, y, z);
+      scene.add(light);
+    }
+
+    Array(200).fill().forEach(addLight);
+
     const controls = new OrbitControls(camera, renderer.domElement);
+    controls.autoRotate = true;
 
     var animate = function () {
       requestAnimationFrame(animate);
 
-      mesh.rotation.z += 0.003;
-      mesh.rotation.y += 0.1;
-      mesh.rotation.z += 0.01;
+      mesh.rotateY(-0.1);
 
       controls.update();
 
@@ -71,6 +137,7 @@ export default class Background extends Component {
 
     animate();
   }
+
   render() {
     return <div ref={(ref) => (this.mount = ref)} />;
   }

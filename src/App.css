@@ -5,8 +5,59 @@ canvas {
   z-index: -1;
 }
 
-div {
-  background-color: white;
-  border-radius: 10px;
+* {
+  text-decoration: none;
+  font-family: "Times New Roman", Times, serif;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: #aff;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow: hidden;
+  background-color: #111;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
   text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: #000;
+}
+
+.projects {
+  background-color: #000;
+}
+
+.project-box {
+  background-color: #111;
+  overflow-x: hidden;
+  margin: 0;
+  color: white;
+  padding: 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.prompt {
+  text-align: center;
+  color: #000;
 }
